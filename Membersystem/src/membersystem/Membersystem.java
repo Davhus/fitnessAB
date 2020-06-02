@@ -16,10 +16,92 @@ public class Membersystem {
    public static int StaffID = -1;
    static Scanner scan = new Scanner(System.in);
  public static void main(String[] args) {
-     System.out.println("");
+     System.out.println("1 - Member Functions \n2 - Staff Functions \n3 - Search Courses");
+     String input1 = scan.nextLine();
+     switch(input1){
+         case "1":
+             if(MemberID != -1){
+             System.out.println("What would you like to do? \n1 - Update member information \n2 - Search Courses \n3 - Book a Course \n4 - Add a membership \nQ - Quit");
+             String memberInput = scan.nextLine();
+             switch(memberInput){
+                 case "1":
+                    updateMember();
+                    break;
+                 
+                 case "2":
+                     searchListings();
+                     break;
+                 case "3":
+                     addBooking();
+                     break;
+                     
+                 case "4":
+                     addMembership();
+                     break;
+                 case "Q":
+                     quit = true;
+             }}else memberLogin();
+             
+         case "2":
+             if(StaffID != -1){
+                 System.out.println("What would you like to do? \n1 - Add Member* \n2 - Update Member \n3 - Add Course* \n4 - Add Course Listing* \n5 - Add Staff* \n6 - Add Equipment* \n7 - Service Equipment* \n8 - Add Booking \n9 - Add Membership \n10 - Search for a Course \nQ - Quit");
+                 String staffInput = scan.nextLine();
+                 switch(staffInput){
+                     case "1":
+                         addMember();
+                         break;
+                         
+                     case "2":
+                         updateMember();
+                         break;
+                         
+                     case "3":
+                         addCourse();
+                         break;
+                         
+                     case "4":
+                         addCourseListing();
+                         break;
+                         
+                     case "5":
+                         addStaff();
+                         break;
+                         
+                     case "6":
+                         addEquipment();
+                         break;
+                        
+                     case "7":
+                         updateEquipment();
+                         break;
+                         
+                     case "8":
+                         addBooking();
+                         break;
+                         
+                     case "9":
+                         addMembership();
+                         break;
+                         
+                     case "10":
+                         searchListings();
+                         break;
+                        
+                     case "Q":
+                         quit = true;
+                         break;
+                             
+                 }
+             }else{
+                 staffLogin();
+             }
+     }
      
-    addMembership();
     
+     
+     
+    
+
      
     
  }
@@ -126,6 +208,59 @@ public class Membersystem {
      }
   }}
   
+   public static void addEquipment(){ //Adds courses to the Course table for use with addCourseListing();
+             boolean quit = false;
+        while(!quit){ 
+     Connection conn = null;
+     if(StaffID != -1){
+        System.out.print("GymID:");
+        String GymID = scan.nextLine();
+        System.out.print("Course Name:");
+        String EqName = scan.nextLine();
+        System.out.print("Service Date DDMMYY:");
+        String ServDate = scan.nextLine();
+        
+        int parsedGymID = Integer.parseInt(GymID);
+     try{  
+         conn = DriverManager.getConnection(DB_URL);//connects to database, takes the inputs from user and assigns them to the correct columns in the table.
+         PreparedStatement statement = conn.prepareStatement("INSERT INTO GymEquipment(EquipmentName, GymID, ServiceDate) VALUES(?, ?, ?)");
+         statement.setString(1, EqName);
+         statement.setInt(2, parsedGymID);
+         statement.setString(3, ServDate);
+         statement.executeUpdate();
+         quit = true;
+     }catch(SQLException ex){System.out.println(ex.toString());}}else{System.out.println("You are not logged in, please log in and try again.");
+            staffLogin();
+           
+        
+     } }}
+   
+   public static void updateEquipment(){
+       boolean quit = false;
+        while(!quit){ 
+     Connection conn = null;
+     if(StaffID != -1){
+        System.out.print("Equipment ID:");
+        String ID = scan.nextLine();
+        System.out.print("Service Date");
+        String newDate = scan.nextLine();
+
+        
+        int parsedID = Integer.parseInt(ID);
+     try{  
+         conn = DriverManager.getConnection(DB_URL);//connects to database, takes the inputs from user and assigns them to the correct columns in the table.
+         PreparedStatement statement = conn.prepareStatement("UPDATE GymEquipment set ServiceDate = ? Where EquipmentID =" + parsedID);
+         statement.setString(1, newDate);
+
+         statement.executeUpdate();
+         quit = true;
+     }catch(SQLException ex){System.out.println(ex.toString());}}else{System.out.println("You are not logged in, please log in and try again.");
+            staffLogin();
+           
+        
+     } }
+   }
+   
    public static void addCourse(){ //Adds courses to the Course table for use with addCourseListing();
              boolean quit = false;
         while(!quit){ 
@@ -209,8 +344,8 @@ public class Membersystem {
                 inputID = MemberID;
             }else{
             System.out.println("Choose Member to add membership to:");
-            inputID = scan.nextInt();
-            
+            String stringinputID = scan.nextLine();
+            inputID = Integer.parseInt(stringinputID);
             }
             System.out.println("Choose Membership Tier:");
             String tierLV = scan.nextLine();
@@ -231,7 +366,7 @@ public class Membersystem {
             String tier = tierName(tierNr);
             try{
             conn = DriverManager.getConnection(DB_URL);
-            PreparedStatement statement = conn.prepareStatement("INSERT INTO MembershipRegistration(MemberID, StartDate, EndDate, PaymentName, AccountNumber, CreditCardDetails, TierName) VALUES(?, ?, ?, ?, ?, ?, " + tier);
+            PreparedStatement statement = conn.prepareStatement("INSERT INTO MembershipRegistration(MemberID, StartDate, EndDate, PaymentName, AccountNumber, CreditCardDetails, TierName) VALUES(?, ?, ?, ?, ?, ?, ?)");
                 statement.setInt(1, inputID);
                 statement.setString(2, Start);
                 statement.setString(3, End);
@@ -240,6 +375,7 @@ public class Membersystem {
                 statement.setInt(6, parsedCreditCard);
                 statement.setString(7, tier);
                 statement.executeUpdate();
+                quit = true;
             }catch(SQLException ex){System.out.println(ex.toString());}
         }else{System.out.println("Please Log in to continue");
         login();
@@ -456,8 +592,10 @@ public class Membersystem {
 
          }
         }catch(SQLException ex){System.out.println(ex.toString());}}
+   
+  
       
-   public static int Memberlogin(){
+   public static int memberLogin(){
       
        Connection conn = null;
        MemberID = -1;
@@ -517,7 +655,7 @@ public class Membersystem {
         String input = scan.nextLine();
         switch(input){
             case "1":
-                Memberlogin();
+                memberLogin();
                 break;
             
             case "2":
